@@ -1,4 +1,5 @@
 const BASE = "https://api.sportsgameodds.com/v2/events";
+const LEAGUES = "https://api.sportsgameodds.com/v2/leagues";
 
 function num(v) {
   if (v === null || v === undefined || v === "") return null;
@@ -78,13 +79,32 @@ export default async function handler(req, res) {
   const key = process.env.SPORTSGAMEODDS_API_KEY;
   if (!key) return res.status(500).json({ ok: false, code: "KEY_MISSING", error: "SPORTSGAMEODDS_API_KEY is not configured in Vercel." });
 
-  const url = new URL(BASE);
-  url.searchParams.set("sportID", "MMA");
-  url.searchParams.set("oddsAvailable", "true");
-  url.searchParams.set("includeOpenCloseOdds", "true");
-  url.searchParams.set("limit", "100");
-
   try {
+    // Lower subscription tiers require event queries to be scoped by leagueID/eventID.
+    // Discover the MMA leagues actually enabled for this API key instead of assuming
+    // that a broad sportID query is permitted.
+    const leagueUrl = new URL(LEAGUES);
+    leagueUrl.searchParams.set("sportID", "MMA");
+    leagueUrl.searchParams.set("limit", "100");
+    const leagueResponse = await fetch(leagueUrl, { headers: { "x-api-key": key, "accept": "application/json" } });
+    const leagueBody = await leagueResponse.json().catch(() => null);
+    if (!leagueResponse.ok || !leagueBody?.success) {
+      return res.status(leagueResponse.status || 502).json({ ok: false, code: "LEAGUES_ERROR", error: leagueBody?.error || `SportsGameOdds leagues HTTP ${leagueResponse.status}` });
+    }
+    const leagueIDs = (leagueBody.data || [])
+      .filter(l => !l?.sportID || String(l.sportID).toUpperCase() === "MMA")
+      .map(l => l?.leagueID)
+      .filter(Boolean);
+    // UFC is the standard MMA league in SportsGameOdds' public catalogue. Use it as
+    // a safe fallback if the plan's leagues response omits sport metadata.
+    if (!leagueIDs.length) leagueIDs.push("UFC");
+
+    const url = new URL(BASE);
+    url.searchParams.set("leagueID", leagueIDs.join(","));
+    url.searchParams.set("oddsAvailable", "true");
+    url.searchParams.set("includeOpenCloseOdds", "true");
+    url.searchParams.set("limit", "100");
+
     const r = await fetch(url, { headers: { "x-api-key": key, "accept": "application/json" } });
     const body = await r.json().catch(() => null);
     if (!r.ok || !body?.success) {
@@ -96,7 +116,7 @@ export default async function handler(req, res) {
       return aa - bb;
     });
     res.setHeader("Cache-Control", "s-maxage=45, stale-while-revalidate=30");
-    return res.status(200).json({ ok: true, provider: "SportsGameOdds", fetchedAt: new Date().toISOString(), events });
+    return res.status(200).json({ ok: true, provider: "SportsGameOdds", leagues: leagueIDs, fetchedAt: new Date().toISOString(), events });
   } catch (e) {
     return res.status(502).json({ ok: false, code: "FETCH_FAILED", error: e instanceof Error ? e.message : "Unable to load MMA odds." });
   }
