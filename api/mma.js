@@ -58,7 +58,7 @@ export default async function handler(req,res){
   const url=new URL(BASE);
   url.searchParams.set("apiKey",key);
   url.searchParams.set("regions","us");
-  url.searchParams.set("markets","h2h");
+  url.searchParams.set("markets","h2h,h2h_lay,totals");
   url.searchParams.set("oddsFormat","decimal");
   url.searchParams.set("dateFormat","iso");
 
