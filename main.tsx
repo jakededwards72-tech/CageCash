@@ -3,6 +3,7 @@ import {createRoot} from "react-dom/client";
 import {Activity,BarChart3,BookOpen,CalendarDays,ChevronLeft,ChevronRight,Clock3,FlaskConical,Info,RefreshCw,Search,ShieldCheck,Target,TrendingUp,WalletCards,Wifi,WifiOff} from "lucide-react";
 import "./styles.css";
 import "./nba.css";
+import ResearchPanel from "./nba-research";
 
 type Book={bookmakerID:string;bookmaker:string;odds:number;updatedAt:string|null;excluded?:boolean};
 type Market={id:string;eventId:string;market:string;player:string|null;line:number|string;side:string;selection:string;bestBook:Book&{decimal:number};fairProbability:number|null;fairOdds:number|null;edge:number|null;ev:number|null;peerBooks:number;books:Book[];integrity:string};
@@ -47,7 +48,7 @@ function App(){
   const [feed,setFeed]=useState<Feed|null>(null);
   const [loading,setLoading]=useState(false);
   const [selected,setSelected]=useState<Game|null>(null);
-  const [detailTab,setDetailTab]=useState<"Lines"|"Props">("Lines");
+  const [detailTab,setDetailTab]=useState<"Lines"|"Props"|"Research">("Lines");
   const [props,setProps]=useState<Props|null>(null);
   const [propsLoading,setPropsLoading]=useState(false);
   const [filter,setFilter]=useState("");
@@ -93,9 +94,9 @@ function App(){
     <div className="cc-detail"><p className="eyebrow">NBA MATCHUP DESK</p><h1>{selected.away.name} <span>@</span> {selected.home.name}</h1><p>{eventTime(selected.startTime)} · {selected.statusDetail || "Scheduled"}</p>
       {selected.status!=="pre"&&<h2>{selected.away.score??"–"} — {selected.home.score??"–"}</h2>}
     </div>
-    <div className="cc-segments"><button className={detailTab==="Lines"?"selected":""} onClick={()=>setDetailTab("Lines")}>Game lines</button><button className={detailTab==="Props"?"selected":""} onClick={()=>setDetailTab("Props")}>Player props</button></div>
-    {detailTab==="Lines"?<section><p className="cc-sub">Best available prices across matching lines. Fair odds use other sportsbooks, not the book being evaluated.</p>{selected.markets.length?selected.markets.map(m=><MarketTile key={m.id} m={m} game={selected} onPick={savePick}/>):<div className="lab"><Info/><h3>No lines for this matchup</h3><p>Game schedule is real, but the configured odds feed has no matching active markets yet.</p></div>}</section>:
-    <section>{propsLoading?<div className="lab"><RefreshCw className="spin"/><h3>Loading player props</h3></div>:props?.ok?<><p className="cc-sub">{props.markets?.length||0} selections. Books and prices are real; no automatic player projections are implied.</p>{props.markets?.length?props.markets.map(m=><MarketTile key={m.id} m={m} game={selected} onPick={savePick}/>):<div className="lab"><h3>No covered player props yet</h3><p>Some books post player lines closer to tipoff.</p></div>}</>:<div className="setup"><Info/><h3>Props unavailable</h3><p>{!selected.oddsEventId?"No matching sportsbook event ID is available for this game.":props?.error || "The provider has not returned player lines."}</p><p>NBA prop access requires a plan that supports per-event additional markets.</p></div>}</section>}
+    <div className="cc-segments"><button className={detailTab==="Lines"?"selected":""} onClick={()=>setDetailTab("Lines")}>Game lines</button><button className={detailTab==="Props"?"selected":""} onClick={()=>setDetailTab("Props")}>Player props</button><button className={detailTab==="Research"?"selected":""} onClick={()=>setDetailTab("Research")}>Research</button></div>
+    {detailTab==="Lines"?<section><p className="cc-sub">Best available prices across matching lines. Fair odds use other sportsbooks, not the book being evaluated.</p>{selected.markets.length?selected.markets.map(m=><MarketTile key={m.id} m={m} game={selected} onPick={savePick}/>):<div className="lab"><Info/><h3>No lines for this matchup</h3><p>Game schedule is real, but the configured odds feed has no matching active markets yet.</p></div>}</section>:detailTab==="Props"?
+    <section>{propsLoading?<div className="lab"><RefreshCw className="spin"/><h3>Loading player props</h3></div>:props?.ok?<><p className="cc-sub">{props.markets?.length||0} selections. Books and prices are real; no automatic player projections are implied.</p>{props.markets?.length?props.markets.map(m=><MarketTile key={m.id} m={m} game={selected} onPick={savePick}/>):<div className="lab"><h3>No covered player props yet</h3><p>Some books post player lines closer to tipoff.</p></div>}</>:<div className="setup"><Info/><h3>Props unavailable</h3><p>{!selected.oddsEventId?"No matching sportsbook event ID is available for this game.":props?.error || "The provider has not returned player lines."}</p><p>NBA prop access requires a plan that supports per-event additional markets.</p></div>}</section>:<ResearchPanel game={selected} onUse={(avg,dev,line)=>{setMean(avg);setSd(dev);setThreshold(line);setSelected(null);setTab("Lab")}}/>}
     <div className="cc-disclaimer">A positive cross-book price gap is not a validated predictive edge. Check injuries, minutes, line movement, and actual sportsbook availability before making a decision.</div></main>;
   return <main><header><div className="brand"><span className="mark">◉</span>COURTCASH</div><div className="headright"><span className={feed?.ok?"status on":"status"}>{feed?.ok?<Wifi/>:<WifiOff/>}</span><span className="cc-tag">NBA · 2026–27</span></div></header>
     {tab==="Games"&&<><section className="hero cc-hero"><div className="eyebrow"><Activity size={14}/> NBA INTELLIGENCE DESK</div><h1>Better numbers.<span> Better decisions.</span></h1><p>Real NBA schedules and bookmaker prices, on-demand player props, and a separate betting record. No made-up projections or manufactured picks.</p><div className="pills"><b>LIVE NBA</b><span>GAME & PROP LINES</span><span>PRICE COMPARISONS</span></div></section>
