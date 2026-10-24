@@ -35,7 +35,7 @@ export default async function handler(req,res) {
     return res.status(400).json({ok:false,error:"Date must be YYYY-MM-DD"});
   }
   const espnUrl=ESPN+"?dates="+date.replace(/-/g,"")+"&limit=100";
-  const key=process.env.THE_ODDS_API_KEY;
+  const key=process.env.THE_ODDS_API_KEY || process.env.SPORTSGAMEODDS_API_KEY; // legacy CageCash Vercel variable
   const oddsUrl=new URL(ODDS);
   oddsUrl.searchParams.set("apiKey",key || "");
   oddsUrl.searchParams.set("regions","us");
