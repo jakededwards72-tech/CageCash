@@ -8,16 +8,16 @@ async function gameLog(id,year){
 }
 export default async function handler(req,res){
   if(req.method!=="GET")return res.status(405).json({ok:false,error:"Method not allowed"});
-  const athlete=String(req.query.athlete||""),cutoff=String(req.query.cutoff||"");
+  const athlete=String(req.query.athlete||""),cutoff=String(req.query.cutoff||""),game=String(req.query.game||"");
   if(!/^[0-9]{3,12}$/.test(athlete)||!Number.isFinite(Date.parse(cutoff)))
     return res.status(400).json({ok:false,error:"Valid ESPN athlete ID and cutoff required"});
   const when=new Date(cutoff),season=when.getUTCFullYear()+(when.getUTCMonth()>=6?1:0);
   let current=[],previous=[],currentError=null,previousError=null;
-  try{current=parseGameLog(await gameLog(athlete,season),cutoff)}
+  try{current=parseGameLog(await gameLog(athlete,season),cutoff,game)}
   catch(e){currentError=String(e?.message||e)}
   // Previous season is labelled separately and never silently mixed with the current season.
   if(current.length<10){
-    try{previous=parseGameLog(await gameLog(athlete,season-1),cutoff)}
+    try{previous=parseGameLog(await gameLog(athlete,season-1),cutoff,game)}
     catch(e){previousError=String(e?.message||e)}
   }
   if(!current.length&&!previous.length)
