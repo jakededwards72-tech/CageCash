@@ -10,12 +10,13 @@ This is an NBA-only adaptation of CageCash. The MMA production branch is not cha
 - Market-only no-vig calculations using median probabilities from other sportsbooks. We do not calculate an edge using the evaluated sportsbook as its own benchmark.
 - Date-based slate navigation, searchable price scanner, sportsbook comparisons.
 - Local pick tracker distinguishing original leans from actual wagers, with manual settling and unit-based ROI.
-- Manual normal-distribution projection calculator. Assumptions are user-provided, not an automatically trained player model.
+- On-demand matchup Research tab with ESPN rosters, recent player game logs, current-vs-previous-season averages, minutes, points, rebounds, assists, 3PM, PRA, and descriptive hit rates at a custom line. Results strictly exclude the selected game and anything after tipoff; baseline estimates require adequate samples.
+- Manual normal-distribution projection calculator, optionally seeded by a player's descriptive historical baseline and variance. This is experimental, uncalibrated, and not an automatically trained player model.
 
 ## Required configuration
 
 1. Import the feature/courtcash-nba branch into a new Vercel project (or create a new GitHub repository from it). The original CageCash MMA production remains untouched.
-2. Set THE_ODDS_API_KEY in Vercel Environment Variables server side and redeploy. Never put API keys in VITE_ browser variables.
+2. Set THE_ODDS_API_KEY (or the legacy SPORTSGAMEODDS_API_KEY) in Vercel Environment Variables server side and redeploy. Never put API keys in VITE_ browser variables.
 3. The provider is The Odds API at the-odds-api.com, consistent with the existing MMA backend, not the separately branded theoddsapi.com.
 4. Moneyline, spread, total, and player prop coverage depends on plan and book coverage. Free plans may offer moneyline only. If needed, request h2h only in api/nba.js. Props may be unavailable under a free plan.
 5. Public Vercel access is determined by Deployment Protection. Preview links may require account authentication.
@@ -37,6 +38,8 @@ Node.js 20+:
 
 - GET /api/nba?date=YYYY-MM-DD — schedule and matching active sportsbook lines; gracefully degrades without a key.
 - GET /api/nba-props?event=ODDS_EVENT_ID — per-game player lines; requires an eligible key.
+- GET /api/nba-roster?away=ESPN_TEAM_ID&home=ESPN_TEAM_ID — game rosters.
+- GET /api/nba-research?athlete=ESPN_ATHLETE_ID&cutoff=TIPOFF_ISO&game=ESPN_GAME_ID — historical player logs, strict pregame cutoff, current/prior seasons separately.
 - Keys are never sent to the browser. No real-money bets can be placed here.
 - Browser picks use localStorage. No cross-device sync and clearing browser data loses the log.
 
