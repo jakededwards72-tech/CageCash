@@ -8,7 +8,7 @@ async function roster(id){
   const athletes=group.flatMap(x=>Array.isArray(x.items)?x.items:[x]);
   return athletes.map(a=>({id:String(a.id||""),name:a.displayName||a.fullName||a.name||"",
     position:a.position?.abbreviation||"",headshot:a.headshot?.href||null,
-    status:a.status?.type||a.status?.name||null}))
+    status:a.status?.name||a.status?.type||null, injuries:Array.isArray(a.injuries)?a.injuries.map(i=>({status:String(i.status||""),date:i.date||null})).filter(i=>i.status):[]}))
     .filter(x=>/^[0-9]{3,12}$/.test(x.id)&&x.name).sort((a,b)=>a.name.localeCompare(b.name));
 }
 export default async function handler(req,res){
