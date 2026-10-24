@@ -121,3 +121,44 @@
 .cc-log th:nth-child(1),.cc-log td:nth-child(1){text-align:left}
 .cc-log tr:last-child td{border-bottom:0}
 @media(max-width:480px){.cc-research-metrics button{padding:11px 6px}.cc-research-metrics strong{font-size:21px}.cc-research-values small{font-size:8px}.cc-hitrate{gap:6px}.cc-segments button{padding:13px 6px;font-size:11px}}
+
+/* Player-first independent projection workspace */
+.cc-projection{max-width:850px}
+.cc-projection .cc-research-title{margin:10px 2px 16px}
+.cc-project-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:15px 0}
+.cc-project-controls label{display:block;color:#b5b0a5;font-size:11px;letter-spacing:.2px}
+.cc-project-controls input,.cc-project-controls select{display:block;background:#0b0c0c;color:#f2efe9;border:1px solid #514936;border-radius:12px;padding:13px 11px;width:100%;max-width:100%;margin-top:7px;font:inherit;font-size:14px}
+.cc-project-controls label small{display:block;margin-top:6px;color:#8e8c85;font-size:10px;line-height:1.5}
+.cc-metric-tabs{display:flex;gap:7px;overflow-x:auto;margin:19px 0;padding-bottom:4px}
+.cc-metric-tabs button{border:1px solid #37352f;background:#171818;color:#bcbcb9;border-radius:999px;padding:11px 15px;white-space:nowrap;cursor:pointer;font-size:12px}
+.cc-metric-tabs button.selected{border-color:#cab17d;background:#3d3220;color:#ffe6af;font-weight:700}
+.cc-model-hero{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;padding:17px 13px;background:linear-gradient(130deg,#282316,#121413 65%);border:1px solid #686044;border-radius:17px;margin:12px 0}
+.cc-model-hero>div{min-width:0}
+.cc-model-hero small,.cc-model-hero span{display:block;color:#ad9b7b;font-size:9px;line-height:1.45;overflow-wrap:anywhere}
+.cc-model-hero strong{font-family:Oswald,sans-serif;display:block;color:#f6e2ae;font-size:clamp(22px,5.3vw,35px);line-height:1.2;margin:8px 0}
+.cc-model-hero span{color:#aaa}
+.cc-model-evidence{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:12px 0}
+.cc-model-evidence>div{background:#111313;border:1px solid #303030;padding:13px 10px;border-radius:12px}
+.cc-model-evidence small,.cc-price-test small,.cc-model-numbers small{display:block;color:#96948d;font-size:9px;line-height:1.45}
+.cc-model-evidence b,.cc-price-test b{display:block;font-family:Oswald,sans-serif;font-size:23px;color:#e9e3d5;margin-top:6px}
+.cc-model-comparison{border:1px solid #3a3930;background:#111312;border-radius:17px;margin:15px 0;padding:15px}
+.cc-side-toggle{display:flex;gap:8px}
+.cc-side-toggle button{flex:1;padding:12px 8px;border-radius:10px;background:#252525;color:#bbb;border:1px solid #414141;font-weight:700;cursor:pointer}
+.cc-side-toggle button.selected{background:#514226;color:#f7dcaa;border-color:#bfa46b}
+.cc-model-numbers{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:16px}
+.cc-model-numbers>div{background:#080a09;padding:13px;border-radius:10px}
+.cc-model-numbers strong{display:block;font-family:Oswald,sans-serif;font-size:32px;color:#f2dfb5;margin:8px 0}
+.cc-model-numbers span{color:#868686;font-size:10px}
+.cc-model-comparison p,.cc-price-test p{font-size:11px;color:#999;line-height:1.65}
+.cc-price-test{display:grid;grid-template-columns:1fr 1fr;gap:8px;border:1px solid #3b342a;border-radius:13px;padding:13px;margin:13px 0}
+.cc-price-test p{grid-column:1/-1;margin:4px 0}
+.cc-model-actions{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0}
+.cc-model-actions button{display:flex;align-items:center;justify-content:center;gap:7px;padding:13px 15px;min-width:125px;flex:1;border:0;border-radius:11px;background:#cdb078;color:#111;font-weight:700;cursor:pointer}
+.cc-model-actions button:nth-child(2){background:#303027;color:#dfc996;border:1px solid #796646}
+.cc-model-actions button.secondary{background:transparent;color:#cbb98f;border:1px solid #554a34}
+.cc-model-actions button:disabled{opacity:.35;cursor:not-allowed}
+.cc-confidence{display:flex;gap:10px;border:1px solid #3d362b;background:#1b1a15;border-radius:12px;padding:14px;color:#b3aca0;font-size:11px;line-height:1.65}
+.cc-confidence svg{flex:none;color:#cbb17d;margin-top:2px}
+.cc-confidence p{margin:0}
+.cc-backtest{margin:15px 0;font-size:11px;color:#bbb;line-height:1.65}
+@media(max-width:500px){.cc-project-controls{grid-template-columns:1fr}.cc-model-hero{padding:13px 9px}.cc-model-hero strong{font-size:clamp(20px,5vw,29px)}.cc-model-hero small,.cc-model-evidence small{font-size:8px}.cc-model-actions button{font-size:11px}.cc-segments button{padding:12px 4px;font-size:11px}}
