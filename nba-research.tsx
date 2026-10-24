@@ -1,7 +1,7 @@
 import React,{useEffect,useMemo,useState} from "react";
 import {Activity,BarChart3,Info,RefreshCw,Target,SlidersHorizontal,Save} from "lucide-react";
 import {americanBreakEven,projectPlayerMetric,walkForwardError} from "./lib/nba-projection.mjs";
-type Athlete={id:string;name:string;position:string;headshot:string|null;status?:string|null;injuries?:string[]};
+type Athlete={id:string;name:string;position:string;headshot:string|null;status?:string|null;injuries?:{status:string;date:string|null}[]};
 type Log={eventId:string;date:string;opponent:string;result:string;min:number;pts:number|null;reb:number|null;ast:number|null;threes:number|null;pra:number|null};
 type Research={ok:boolean;current?:Log[];previous?:Log[];error?:string;warning?:string;source?:string};
 type Game={id:string;startTime:string|null;away:{teamId:string|null;name:string};home:{teamId:string|null;name:string}};
@@ -54,7 +54,6 @@ export default function ProjectionPanel({game,onUse,onRecord}:{game:Game;onUse:(
  const validation=useMemo(()=>research?.ok?walkForwardError(current,previous,metric):null,[research,metric]);
  const p=result?(side==="Over"?result.over:result.under):null;
  const implied=oddsValue===null?null:americanBreakEven(oddsValue);
- const ev=implied!==null&&p!==null&&oddsValue!==null?100*(p/(implied)-1)*(1-implied)/(1- p + p*(1-implied)/implied):null;
  // Exact expected profit per 1 unit staked, using the experimental probability.
  const dec=oddsValue!==null&&implied!==null?1/implied:null;
  const estimatedEV=dec!==null&&p!==null?(100*(p*dec-1)):null;
@@ -72,11 +71,11 @@ export default function ProjectionPanel({game,onUse,onRecord}:{game:Game;onUse:(
   {rosterLoading?<div className="lab"><RefreshCw className="spin"/><h3>Loading NBA players…</h3></div>:!roster?.ok?<div className="setup"><Info/><h3>Unable to load NBA players</h3><p>{roster?.error}</p></div>:<>
     <div className="cc-project-controls">
      <label>Find a player<input value={search} placeholder="Search either team's roster" onChange={e=>setSearch(e.target.value)}/></label>
-     <label>Choose player<select value={athlete} onChange={e=>setAthlete(e.target.value)}>
+     <label>Choose player<select value={visible.some(a=>a.id===athlete)?athlete:""} onChange={e=>e.target.value&&setAthlete(e.target.value)}><option value="" disabled>Select a matching player</option>
        {visible.length?visible.map(a=><option value={a.id} key={a.id}>{a.name} · {a.position}</option>):<option value={athlete}>No matches — clear search</option>}
      </select></label>
     </div>
-    {who&&<div className="cc-player-label">{who.headshot&&<img src={who.headshot} alt="" loading="lazy"/>}<div><small>INDEPENDENT PLAYER ANALYSIS</small><h3>{who.name}</h3><span>{current.length} current-season · {previous.length} previous-season pregame logs</span></div></div>}
+    {who&&<div className="cc-player-label">{who.headshot&&<img src={who.headshot} alt="" loading="lazy"/>}<div><small>INDEPENDENT PLAYER ANALYSIS</small><h3>{who.name}</h3><span>{current.length} current-season · {previous.length} previous-season pregame logs</span></div></div>}{who?.injuries?.length? <div className="warning"><Info/><p><b>ESPN roster injury flag:</b> {who.injuries.map(i=>i.status+(i.date?" (reported "+i.date.slice(0,10)+")":"")).join(", ")}. This status may be outdated; confirm current availability. Projection minutes are not automatically adjusted.</p></div>:null}
     {loading?<div className="lab"><RefreshCw className="spin"/><h3>Building player profile…</h3></div>:!research?.ok?<div className="setup"><Info/><h3>Player history unavailable</h3><p>{research?.error||"Select a player to analyze."}</p><p>Sportsbook odds are unrelated to this connection. If the ESPN feed is down, try another player.</p></div>:<>
      <div className="cc-metric-tabs">{STATS.map(([k,label])=><button className={metric===k?"selected":""} key={k} onClick={()=>{setMetric(k);setLine("")}}>{label}</button>)}</div>
      {!result?<div className="setup"><Info/><h3>Insufficient historical sample</h3><p>This player's available log contains fewer than three current-season games and fewer than eight prior-season games with valid minutes and {marketLabel.toLowerCase()}.</p><p>No estimate is shown rather than inventing a projection.</p></div>:<>
