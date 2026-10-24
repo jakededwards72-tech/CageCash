@@ -1,51 +1,62 @@
-# CourtCash — NBA intelligence (feature branch)
+# CourtCash NBA — independent player projection workspace
 
-This is an NBA-only adaptation of CageCash. The MMA production branch is not changed unless this branch is merged. For a separate NBA site, deploy this branch as a separate Vercel project rather than replacing CageCash's existing production deployment.
+Live site: https://courtcash-nba.vercel.app
 
-## What works now
+This is a separate Vercel project deployed from the feature/courtcash-nba branch of CageCash. Original MMA production is unaffected.
 
-- NBA game schedules and final/live scores for selected Eastern dates, from ESPN's publicly accessible scoreboard endpoint.
-- Server-side current NBA sportsbook lines (moneyline, spreads, totals) using The Odds API v4.
-- A detail screen comparing matching sportsbook lines and on-demand per-game NBA player props (points, rebounds, assists, threes and PRA) where included in the provider plan.
-- Market-only no-vig calculations using median probabilities from other sportsbooks. We do not calculate an edge using the evaluated sportsbook as its own benchmark.
-- Date-based slate navigation, searchable price scanner, sportsbook comparisons.
-- Local pick tracker distinguishing original leans from actual wagers, with manual settling and unit-based ROI.
-- On-demand matchup Research tab with ESPN rosters, recent player game logs, current-vs-previous-season averages, minutes, points, rebounds, assists, 3PM, PRA, and descriptive hit rates at a custom line. Results strictly exclude the selected game and anything after tipoff; baseline estimates require adequate samples.
-- Manual normal-distribution projection calculator, optionally seeded by a player's descriptive historical baseline and variance. This is experimental, uncalibrated, and not an automatically trained player model.
+## Primary workflow (no sportsbook API needed)
 
-## Required configuration
+1. Pick an NBA matchup from the ESPN schedule.
+2. Open the **Projection engine** tab (default), search or select a player.
+3. Select points, rebounds, assists, made threes, or points+rebounds+assists (PRA).
+4. The **experimental independent model** estimates playing time and per-minute production, blending current and prior regular-season logs available *before that game's tipoff*.
+5. Inspect the estimate, approximate 80% range, actual recent performances, sample sizes, and historical walk-forward mean absolute error where there are enough games.
+6. Enter any prop line and optional book price yourself. The interface gives an approximate over/under probability and estimated break-even / model-assumed EV. These are *not validated betting edges*.
+7. Override expected minutes manually to evaluate scenarios. Save your own initial lean separately from an actual wager in the tracker.
 
-1. Import the feature/courtcash-nba branch into a new Vercel project (or create a new GitHub repository from it). The original CageCash MMA production remains untouched.
-2. Set THE_ODDS_API_KEY (or the legacy SPORTSGAMEODDS_API_KEY) in Vercel Environment Variables server side and redeploy. Never put API keys in VITE_ browser variables.
-3. The provider is The Odds API at the-odds-api.com, consistent with the existing MMA backend, not the separately branded theoddsapi.com.
-4. Moneyline, spread, total, and player prop coverage depends on plan and book coverage. Free plans may offer moneyline only. If needed, request h2h only in api/nba.js. Props may be unavailable under a free plan.
-5. Public Vercel access is determined by Deployment Protection. Preview links may require account authentication.
+A key missing or props unavailable response only affects the optional **Book props** tab, **Game lines** tab, and market-price scanner. It never gates the projection engine.
 
-## Important limitations
+## Independent model (lib/nba-projection.mjs)
 
-The app does not automatically announce NBA best bets. A cross-book price discrepancy is NOT an independently validated predictive edge. No live injury model, starting lineup data, minutes or usage projections, or trained/calibrated player prediction pipeline exists in this release. Those need reliable data and chronological backtests.
+- Reads valid regular-season ESPN logs strictly before the selected game.
+- Requires at least 3 usable current-season games **or** 8 usable previous-season games, otherwise returns no estimate.
+- Blends exponentially decayed per-minute rates across seasons; shrinks early current-season samples toward established prior data.
+- Estimates playing time from recent minutes and prior-season minutes, with a user-adjustable minutes scenario.
+- Provides an approximate distribution based on observed variance and explicit conservative variance floors. Reports sample-confidence grades, current/prior weighting, and a normal-approximation over/under calculation at a user-supplied line.
+- Separately offers a small rolling historical error check, **not** external calibration, official tips or a wagering recommendation.
+- Injury flags, if present in the ESPN roster feed, are shown as context only. **No** verified injury, confirmed lineup, usage, opponent defense, rest, schedule or pace adjustment is modeled.
+
+NBA performance is noisy. The numbers are hypotheses to test, not guarantees. Do not treat model-implied EV as actual profitable value until an independent chronological test has established calibration and realistic performance.
+
+## Optional sportsbook data
+
+- `THE_ODDS_API_KEY` server-side Vercel environment variable enables supported provider markets. Never expose any provider key through `VITE_` env vars.
+- Integration uses **the-odds-api.com** V4 (with hyphens), *not* the similarly named **theoddsapi.com** service.
+- Player props depend on sportsbook markets, provider tier and matched event IDs, and may remain unavailable. Manual prop entry and projections still work without them.
+- The price scanner shows cross-book no-vig comparisons, *not* the independent player model.
+
+## Other capabilities
+
+- NBA calendar, matchups, and scores (ESPN public scoreboard).
+- Current/prior-season real player game logs and recent sample rates (ESPN public, unofficial feeds).
+- Browser-local betting tracker separating your original lean from placed wagers and recording units, ROI and outcomes; clearing browser storage loses this record.
+- Manual scenario lab separate from automated player projection.
+- No ability to place real-money wagers.
 
 ## Local development
 
-Node.js 20+:
+Node.js 22+:
 
     npm install
-    npm run dev
     npm test
     npm run build
+    npm run dev
 
-## Endpoints
+## Routes
 
-- GET /api/nba?date=YYYY-MM-DD — schedule and matching active sportsbook lines; gracefully degrades without a key.
-- GET /api/nba-props?event=ODDS_EVENT_ID — per-game player lines; requires an eligible key.
-- GET /api/nba-roster?away=ESPN_TEAM_ID&home=ESPN_TEAM_ID — game rosters.
-- GET /api/nba-research?athlete=ESPN_ATHLETE_ID&cutoff=TIPOFF_ISO&game=ESPN_GAME_ID — historical player logs, strict pregame cutoff, current/prior seasons separately.
-- Keys are never sent to the browser. No real-money bets can be placed here.
-- Browser picks use localStorage. No cross-device sync and clearing browser data loses the log.
+- `GET /api/nba?date=YYYY-MM-DD` — ESPN scoreboard and optional odds.
+- `GET /api/nba-roster?away=ESPN_TEAM_ID&home=ESPN_TEAM_ID` — roster and available ESPN injury statuses.
+- `GET /api/nba-research?athlete=ESPN_ATHLETE_ID&cutoff=TIPOFF_ISO&game=ESPN_GAME_ID` — game logs with strict pregame cutoff.
+- `GET /api/nba-props?event=ODDS_EVENT_ID` — optional bookmaker player prop feed.
 
-## Data accuracy
-
-- Dates shown in Eastern time.
-- Games matched to odds by normalized home and away names; ESPN and sportsbook IDs are never interchangeable.
-- Market EV requires at least two independent peer books quoting the identical point line and both sides.
-- ESPN APIs used are public but unofficial and subject to change.
+The model is pure and independently unit tested in `tests/nba-projection.test.mjs`.
