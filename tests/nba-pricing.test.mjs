@@ -8,7 +8,7 @@ const book=(id,away=-110,home=-110,spread=2.5)=>({key:id,title:id,markets:[
   pair("totals",{name:"Over",point:225.5,price:-110},{name:"Under",point:225.5,price:-110})
 ]});
 const game={id:"abcdef01234567",away_team:"LA Clippers",home_team:"Miami Heat",
-  commence_time:"2026-10-24T23:30:00Z",bookmakers:[book("fanduel",+180,-110),book("draftkings"),book("betmgm"),book("caesars")]};
+  commence_time:"2026-10-24T23:30:00Z",bookmakers:[book("fanduel",+120,-110),book("draftkings"),book("betmgm"),book("caesars")]};
 test("American odds conversion",()=>{
   assert.equal(decimal(100),2);
   assert.equal(decimal(-100),2);
