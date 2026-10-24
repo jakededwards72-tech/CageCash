@@ -29,7 +29,7 @@ export default function ResearchPanel({game,onUse}:{game:{id:string;startTime:st
    let active=true;setResearch(null);
    if(!athlete||!game.startTime)return;
    setLoading(true);
-   fetch("/api/nba-research?athlete="+encodeURIComponent(athlete)+"&cutoff="+encodeURIComponent(game.startTime))
+   fetch("/api/nba-research?athlete="+encodeURIComponent(athlete)+"&cutoff="+encodeURIComponent(game.startTime)+"&game="+encodeURIComponent(game.id))
      .then(r=>r.json()).then(data=>{if(active)setResearch(data)})
      .catch(()=>{if(active)setResearch({ok:false,error:"The player game log did not load"})})
      .finally(()=>{if(active)setLoading(false)});
