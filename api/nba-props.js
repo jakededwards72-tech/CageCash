@@ -5,7 +5,7 @@ export default async function handler(req,res) {
   if(req.method!=="GET")return res.status(405).json({ok:false,error:"Method not allowed"});
   const id=typeof req.query.event==="string"?req.query.event:"";
   if(!/^[a-zA-Z0-9]{8,64}$/.test(id))return res.status(400).json({ok:false,error:"Invalid sportsbook event ID"});
-  const key=process.env.THE_ODDS_API_KEY;
+  const key=process.env.THE_ODDS_API_KEY || process.env.SPORTSGAMEODDS_API_KEY; // legacy CageCash Vercel variable
   if(!key)return res.status(503).json({ok:false,code:"KEY_MISSING",error:"Set THE_ODDS_API_KEY in the NBA Vercel project's environment variables."});
   const url=new URL(BASE+encodeURIComponent(id)+"/odds/");
   url.searchParams.set("apiKey",key);url.searchParams.set("regions","us");
